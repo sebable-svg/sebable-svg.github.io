@@ -1,0 +1,1937 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+    
+    <!-- iOS Web App Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Finanzen">
+    
+    <!-- Apple Touch Icon -->
+    <link rel="apple-touch-icon" sizes="180x180" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgwIiBoZWlnaHQ9IjE4MCIgdmlld0JveD0iMCAwIDE4MCAxODAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjE4MCIgaGVpZ2h0PSIxODAiIHJ4PSIzNiIgZmlsbD0iIzNCODJGNiIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iLWFwcGxlLXN5c3RlbSwgQmxpbmtNYWNTeXN0ZW1Gb250LCAnU2Vnb2UgVUknLCBSb2JvdG8sIE94eWdlbiwgVWJ1bnR1LCBDYW50YXJlbGwsICdGaXJhIFNhbnMnLCAnRHJvaWQgU2FucycsICdIZWx2ZXRpY2EgTmV1ZScsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iODBweCIgZm9udC13ZWlnaHQ9IjYwMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iIGZpbGw9IndoaXRlIj7wn5GPPC90ZXh0Pjwvc3ZnPg==">
+    
+    <meta name="theme-color" content="#3B82F6">
+    <meta name="format-detection" content="telephone=no">
+    
+    <title>Finanzübersicht</title>
+    
+    <style>
+        /* ========== PERFORMANCE OPTIMIERUNGEN ========== */
+        
+        /* Hardware Acceleration für iOS */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-overflow-scrolling: touch;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            transform: translateZ(0);
+            -webkit-transform: translateZ(0);
+        }
+        
+        /* Fix für iOS Scroll Jank */
+        html, body {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            position: fixed;
+            overscroll-behavior: none;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f172a;
+            color: #f8fafc;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            overscroll-behavior: none;
+            touch-action: pan-y;
+        }
+        
+        .light {
+            background: #f9fafb;
+            color: #111827;
+        }
+        
+        /* Safe Areas */
+        :root {
+            --safe-top: env(safe-area-inset-top, 0px);
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
+            --safe-left: env(safe-area-inset-left, 0px);
+            --safe-right: env(safe-area-inset-right, 0px);
+        }
+        
+        /* ========== LAYOUT (OPTIMIZED) ========== */
+        
+        .app-container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            left: 0;
+        }
+        
+        .app-header {
+            background: #1e293b;
+            padding: 12px 16px;
+            padding-top: calc(12px + var(--safe-top));
+            border-bottom: 1px solid #334155;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            flex-shrink: 0;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        
+        .light .app-header {
+            background: white;
+            border-color: #e5e7eb;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        
+        /* FLÜSSIGER SCROLL CONTAINER */
+        .app-content {
+            flex: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            overflow-x: hidden;
+            position: relative;
+            will-change: transform;
+            /* iOS Smooth Scroll */
+            -webkit-transform: translateZ(0);
+            transform: translateZ(0);
+            /* Performance */
+            contain: content;
+            /* Scrollbar verstecken */
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        
+        .app-content::-webkit-scrollbar {
+            display: none;
+        }
+        
+        /* Content Padding */
+        .content-padding {
+            padding: 16px;
+            padding-bottom: calc(80px + var(--safe-bottom));
+        }
+        
+        .app-footer {
+            position: sticky;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #1e293b;
+            border-top: 1px solid #334155;
+            padding: 8px 16px;
+            padding-bottom: calc(8px + var(--safe-bottom));
+            display: flex;
+            justify-content: space-around;
+            z-index: 100;
+            height: 60px;
+            flex-shrink: 0;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        
+        .light .app-footer {
+            background: white;
+            border-color: #e5e7eb;
+        }
+        
+        /* ========== PERFORMANCE OPTIMIZED COMPONENTS ========== */
+        
+        /* Tabs - GPU beschleunigt */
+        .tab-button {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 11px;
+            padding: 8px;
+            border-radius: 8px;
+            transition: all 0.2s;
+            -webkit-tap-highlight-color: transparent;
+            will-change: transform, background-color;
+        }
+        
+        .light .tab-button {
+            color: #6b7280;
+        }
+        
+        .tab-button.active {
+            color: #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
+        }
+        
+        .tab-button:active {
+            transform: scale(0.95);
+            opacity: 0.8;
+        }
+        
+        .tab-icon {
+            font-size: 20px;
+            line-height: 1;
+            display: inline-block;
+        }
+        
+        /* Cards mit Performance */
+        .card {
+            background: #1e293b;
+            border-radius: 16px;
+            padding: 16px;
+            border: 1px solid #334155;
+            margin-bottom: 16px;
+            will-change: transform;
+            transform: translateZ(0);
+            -webkit-transform: translateZ(0);
+        }
+        
+        .light .card {
+            background: white;
+            border-color: #e5e7eb;
+        }
+        
+        /* Stats Grid - minimal reflow */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 16px;
+            will-change: transform;
+        }
+        
+        .stat-card {
+            background: #1e293b;
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+            border: 1px solid #334155;
+            transform: translateZ(0);
+        }
+        
+        .light .stat-card {
+            background: white;
+            border-color: #e5e7eb;
+        }
+        
+        /* Charts */
+        .chart-container {
+            height: 200px;
+            position: relative;
+            width: 100%;
+            margin: 16px 0;
+            contain: layout style;
+        }
+        
+        canvas {
+            display: block;
+            width: 100% !important;
+            height: 100% !important;
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
+        }
+        
+        /* Inputs - kein Layout Shift */
+        input {
+            background: #334155;
+            color: #f8fafc;
+            border: 1.5px solid #475569;
+            border-radius: 12px;
+            padding: 14px;
+            font-size: 16px;
+            width: 100%;
+            -webkit-appearance: none;
+            appearance: none;
+            will-change: transform;
+            transform: translateZ(0);
+            min-height: 44px;
+            /* iPhone-Spezifik: Größere Touch-Targets */
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        .light input {
+            background: white;
+            color: #111827;
+            border-color: #e5e7eb;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+        }
+        
+        /* Buttons - GPU optimiert */
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 14px 20px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-height: 44px;
+            min-width: 44px;
+            -webkit-tap-highlight-color: transparent;
+            will-change: transform, opacity;
+            transform: translateZ(0);
+            /* iPhone-Spezifik: Größere Touch-Targets */
+            touch-action: manipulation;
+        }
+        
+        button:active {
+            transform: scale(0.97);
+            opacity: 0.9;
+        }
+        
+        button.secondary {
+            background: #334155;
+            color: #f8fafc;
+            border: 1px solid #475569;
+        }
+        
+        .light button.secondary {
+            background: #f3f4f6;
+            color: #111827;
+            border-color: #e5e7eb;
+        }
+        
+        button.quick-add-btn {
+            background: #10b981;
+            padding: 8px 12px;
+            font-size: 16px;
+            min-width: 44px;
+            min-height: 44px;
+            font-weight: bold;
+        }
+        
+        button.quick-add-btn:active {
+            background: #0da271;
+        }
+        
+        /* Utility Classes - minimal */
+        .hidden { display: none !important; }
+        .flex { display: flex; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .gap-2 { gap: 8px; }
+        .gap-3 { gap: 12px; }
+        .gap-4 { gap: 16px; }
+        .mb-3 { margin-bottom: 12px; }
+        .mb-4 { margin-bottom: 16px; }
+        .mb-6 { margin-bottom: 24px; }
+        .rounded-lg { border-radius: 12px; }
+        .text-lg { font-size: 18px; line-height: 1.4; }
+        .text-sm { font-size: 14px; line-height: 1.4; }
+        .text-xs { font-size: 12px; line-height: 1.4; }
+        .font-bold { font-weight: 700; }
+        .font-semibold { font-weight: 600; }
+        .w-full { width: 100%; }
+        .space-y-3 > * + * { margin-top: 12px; }
+        .space-y-4 > * + * { margin-top: 16px; }
+        .opacity-75 { opacity: 0.75; }
+        
+        /* Amount Display */
+        .amount {
+            font-family: 'SF Mono', Menlo, Monaco, Consolas, monospace;
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+        }
+        
+        .amount.positive {
+            color: #34d399;
+        }
+        
+        .amount.negative {
+            color: #f87171;
+        }
+        
+        .light .amount.positive {
+            color: #10b981;
+        }
+        
+        .light .amount.negative {
+            color: #ef4444;
+        }
+        
+        /* Badge */
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 9999px;
+            font-size: 12px;
+            font-weight: 600;
+            background: rgba(52,211,153,0.2);
+            color: #34d399;
+        }
+        
+        .light .badge {
+            background: rgba(34,197,94,0.1);
+            color: #10b981;
+        }
+        
+        /* Theme Toggle */
+        .theme-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 52px;
+            height: 32px;
+        }
+        
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #475569;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        
+        .light .slider {
+            background-color: #e5e7eb;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 24px;
+            width: 24px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        input:checked + .slider {
+            background-color: #3b82f6;
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(20px);
+        }
+        
+        /* Warning */
+        .warning {
+            background: rgba(248,113,113,0.15);
+            border-left: 4px solid #f87171;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+        
+        .light .warning {
+            background: rgba(239,68,68,0.1);
+            border-left-color: #ef4444;
+        }
+        
+        /* Progress Bar */
+        .progress-bar {
+            height: 6px;
+            background: #475569;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 4px;
+        }
+        
+        .light .progress-bar {
+            background: #e5e7eb;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+        
+        /* Tab Content */
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease;
+            will-change: transform, opacity;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* ========== IOS SPECIFIC FIXES ========== */
+        
+        /* Verhindert Textauswahl beim Scrollen */
+        .no-select {
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        
+        /* Erlaubt Textauswahl in Inputs */
+        input, textarea {
+            -webkit-user-select: text;
+            user-select: text;
+        }
+        
+        /* Verhindert Elastic Scroll/Bounce */
+        .app-content {
+            overscroll-behavior: contain;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        /* Fix für iOS 100vh Problem */
+        @supports (-webkit-touch-callout: none) {
+            .app-container {
+                height: -webkit-fill-available;
+            }
+        }
+        
+        /* Performance: weniger Reflows */
+        .performance-optimized {
+            will-change: transform;
+            transform: translateZ(0);
+        }
+        
+        /* Smooth Transitions */
+        .smooth-transition {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        /* Loading Spinner */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 200px;
+            color: #94a3b8;
+        }
+        
+        .light .loading {
+            color: #6b7280;
+        }
+        
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-weight: 600;
+            z-index: 1000;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            animation: fadeInOut 2s ease;
+            pointer-events: none;
+        }
+        
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translate(-50%, -20px); }
+            10% { opacity: 1; transform: translate(-50%, -50%); }
+            90% { opacity: 1; transform: translate(-50%, -50%); }
+            100% { opacity: 0; transform: translate(-50%, -20px); }
+        }
+        
+        /* Quick Add Modal */
+        .quick-add-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+        
+        .quick-add-content {
+            background: #1e293b;
+            border-radius: 16px;
+            padding: 24px;
+            width: 100%;
+            max-width: 320px;
+            border: 1px solid #334155;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .light .quick-add-content {
+            background: white;
+            border-color: #e5e7eb;
+        }
+        
+        .quick-add-header {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+        
+        .quick-add-input {
+            margin-bottom: 16px;
+        }
+        
+        .quick-add-actions {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .quick-add-actions button {
+            flex: 1;
+        }
+    </style>
+    
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+</head>
+<body class="performance-optimized">
+    <div class="app-container">
+        <!-- Header -->
+        <div class="app-header">
+            <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-3">
+                    <h1 class="text-lg font-bold">💰 Finanzen</h1>
+                    <div id="monthStatus" class="badge">Aktuell</div>
+                </div>
+                
+                <div class="theme-toggle">
+                    <span class="text-sm">Dark</span>
+                    <label class="switch">
+                        <input type="checkbox" id="themeToggle" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+            
+            <!-- Month Navigation -->
+            <div class="flex items-center justify-between gap-2 mb-2">
+                <button id="prevMonth" class="secondary" style="padding: 8px 12px;">
+                    ◀
+                </button>
+                
+                <button id="monthSelector" class="flex-1">
+                    <div class="text-center">
+                        <div id="currentMonthDisplay" class="font-semibold">Lade...</div>
+                        <div id="monthProgress" class="text-xs opacity-75">-</div>
+                    </div>
+                </button>
+                
+                <button id="nextMonth" class="secondary" style="padding: 8px 12px;">
+                    ▶
+                </button>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="app-content" id="scrollContainer">
+            <div class="content-padding">
+                <!-- Quick Stats -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="text-xs opacity-75 mb-1">Saldo</div>
+                        <div id="saldo" class="font-bold amount">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="text-xs opacity-75 mb-1">Ausgaben</div>
+                        <div id="expenses" class="font-bold amount">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="text-xs opacity-75 mb-1">Sparquote</div>
+                        <div id="sparquote" class="font-bold amount">-</div>
+                    </div>
+                </div>
+                
+                <!-- Warning Area -->
+                <div id="warningArea"></div>
+                
+                <!-- Dashboard Tab -->
+                <div id="tab-dashboard" class="tab-content active">
+                    <!-- Categories -->
+                    <div class="mb-6">
+                        <h2 class="text-lg font-semibold mb-4">Kategorien</h2>
+                        <div id="categories" class="space-y-4"></div>
+                    </div>
+                    
+                    <!-- Chart -->
+                    <div class="card">
+                        <h2 class="font-semibold mb-3">Ausgabenverteilung</h2>
+                        <div class="chart-container">
+                            <canvas id="pieChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- Budget Limits -->
+                    <div class="card">
+                        <h2 class="font-semibold mb-3">Budget Limits</h2>
+                        <div id="thresholds" class="space-y-3"></div>
+                    </div>
+                </div>
+                
+                <!-- Analysis Tab -->
+                <div id="tab-analysis" class="tab-content">
+                    <h2 class="text-lg font-semibold mb-4">Analyse</h2>
+                    
+                    <div class="space-y-4">
+                        <div class="card">
+                            <h3 class="font-semibold mb-2">Monatsverlauf</h3>
+                            <div class="chart-container">
+                                <canvas id="barChart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <h3 class="font-semibold mb-2">Monatsanalyse</h3>
+                            <div id="analysisText" class="space-y-3"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Settings Tab -->
+                <div id="tab-settings" class="tab-content">
+                    <h2 class="text-lg font-semibold mb-4">Einstellungen</h2>
+                    
+                    <div class="space-y-4">
+                        <div class="card">
+                            <h3 class="font-semibold mb-3">Monatsaktionen</h3>
+                            <div class="space-y-2">
+                                <button id="saveMonthBtn" class="w-full" style="background: #10b981;">
+                                    💾 Monat speichern
+                                </button>
+                                <button id="resetBtn" class="w-full" style="background: #f59e0b;">
+                                    🔄 Monat zurücksetzen
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <h3 class="font-semibold mb-3">Datenverwaltung</h3>
+                            <div class="space-y-2">
+                                <button id="exportState" class="w-full secondary">
+                                    📥 Backup exportieren
+                                </button>
+                                <button id="exportCSV" class="w-full secondary">
+                                    📊 CSV Export
+                                </button>
+                                <button id="importState" class="w-full secondary">
+                                    📤 Backup importieren
+                                </button>
+                                <input type="file" id="importStateFile" accept=".json" class="hidden">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tab Bar -->
+        <div class="app-footer">
+            <button class="tab-button active" data-tab="dashboard">
+                <span class="tab-icon">📊</span>
+                <span>Dashboard</span>
+            </button>
+            
+            <button class="tab-button" data-tab="analysis">
+                <span class="tab-icon">📈</span>
+                <span>Analyse</span>
+            </button>
+            
+            <button class="tab-button" data-tab="settings">
+                <span class="tab-icon">⚙️</span>
+                <span>Einstellungen</span>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Quick Add Modal -->
+    <div id="quickAddModal" class="quick-add-modal hidden">
+        <div class="quick-add-content">
+            <div class="quick-add-header" id="quickAddTitle"></div>
+            <div class="quick-add-input">
+                <input type="number" 
+                       id="quickAddAmount" 
+                       step="0.01"
+                       min="0"
+                       placeholder="0.00"
+                       class="w-full"
+                       autofocus>
+            </div>
+            <div class="quick-add-actions">
+                <button id="quickAddCancel" class="secondary">Abbrechen</button>
+                <button id="quickAddConfirm" style="background: #10b981;">Hinzufügen</button>
+            </div>
+        </div>
+    </div>
+
+<script>
+// ===================== PERFORMANCE OPTIMIZED APP =====================
+const DEFAULT_CATEGORIES = {
+    "Fixe Kosten": {
+        items: [
+            { name: "Miete", amount: 585 },
+            { name: "Kredit", amount: 200 },
+            { name: "Autokredit", amount: 352 },
+            { name: "Rate+", amount: 50 },
+            { name: "Strom", amount: 62 },
+            { name: "ZahnVers", amount: 22 },
+            { name: "Krank.Vers", amount: 142 },
+            { name: "DEVK Hausrat", amount: 22 },
+            { name: "Telekom", amount: 48 },
+            { name: "Handy", amount: 56 },
+            { name: "AutoVers", amount: 71 },
+            { name: "Spotify", amount: 12 }
+        ],
+        threshold: 999999,
+        color: "#3b82f6",
+        icon: "🏠"
+    },
+    "Variabel": {
+        items: [
+            { name: "Tanken", amount: 100 }
+        ],
+        threshold: 300,
+        color: "#10b981",
+        icon: "⛽"
+    },
+    "Sparen": {
+        items: [
+            { name: "Katze/Sparen", amount: 100 }
+        ],
+        threshold: 999999,
+        color: "#8b5cf6",
+        icon: "💰"
+    },
+    "Einnahmen": {
+        items: [
+            { name: "Gehalt", amount: 2610 }
+        ],
+        threshold: 999999,
+        color: "#f59e0b",
+        icon: "💼"
+    },
+    "Leben": {
+        items: [
+            { name: "Rauchen", amount: 200 },
+            { name: "Einkaufen", amount: 0 }
+        ],
+        threshold: 400,
+        color: "#ef4444",
+        icon: "🛍️"
+    }
+};
+
+class PerformanceFinanceApp {
+    constructor() {
+        this.state = this.loadState();
+        this.history = this.loadHistory();
+        this.currentMonth = this.loadSelectedMonth() || new Date();
+        this.charts = {};
+        this.isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        this.scrollPosition = 0;
+        this.currentQuickAdd = null; // { category, index }
+        this.init();
+    }
+    
+    loadState() {
+        try {
+            const saved = localStorage.getItem('finanz_perf_state');
+            return saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
+        } catch {
+            return JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
+        }
+    }
+    
+    saveState() {
+        requestAnimationFrame(() => {
+            localStorage.setItem('finanz_perf_state', JSON.stringify(this.state));
+        });
+    }
+    
+    loadHistory() {
+        try {
+            const saved = localStorage.getItem('finanz_perf_history');
+            return saved ? JSON.parse(saved) : [];
+        } catch {
+            return [];
+        }
+    }
+    
+    saveHistory() {
+        requestAnimationFrame(() => {
+            localStorage.setItem('finanz_perf_history', JSON.stringify(this.history));
+        });
+    }
+    
+    loadSelectedMonth() {
+        try {
+            const saved = localStorage.getItem('finanz_perf_selected_month');
+            return saved ? new Date(JSON.parse(saved)) : null;
+        } catch {
+            return null;
+        }
+    }
+    
+    saveSelectedMonth() {
+        requestAnimationFrame(() => {
+            localStorage.setItem('finanz_perf_selected_month', JSON.stringify(this.currentMonth));
+        });
+    }
+    
+    init() {
+        this.initTheme();
+        this.initSmoothScroll();
+        this.initEventListeners();
+        this.initDemoHistory();
+        this.render();
+        
+        // Performance: Deferred chart rendering
+        setTimeout(() => this.renderCharts(), 300);
+    }
+    
+    initSmoothScroll() {
+        if (!this.isIOS) return;
+        
+        const scrollContainer = document.getElementById('scrollContainer');
+        scrollContainer.style.webkitOverflowScrolling = 'touch';
+    }
+    
+    initTheme() {
+        const saved = localStorage.getItem('finanz_perf_theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const isDark = saved ? saved === 'dark' : prefersDark;
+        
+        document.body.classList.toggle('light', !isDark);
+        document.getElementById('themeToggle').checked = isDark;
+        
+        const themeColor = document.querySelector('meta[name="theme-color"]');
+        if (themeColor) {
+            themeColor.content = isDark ? '#0f172a' : '#3B82F6';
+        }
+    }
+    
+    initEventListeners() {
+        // Theme Toggle
+        document.getElementById('themeToggle').addEventListener('change', (e) => {
+            const isDark = e.target.checked;
+            document.body.classList.toggle('light', !isDark);
+            localStorage.setItem('finanz_perf_theme', isDark ? 'dark' : 'light');
+            
+            const themeColor = document.querySelector('meta[name="theme-color"]');
+            if (themeColor) {
+                themeColor.content = isDark ? '#0f172a' : '#3B82F6';
+            }
+            
+            this.showToast(isDark ? 'Dark Mode' : 'Light Mode');
+            setTimeout(() => this.renderCharts(), 100);
+        });
+        
+        // Tab Navigation
+        document.querySelectorAll('.tab-button').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const tab = btn.dataset.tab;
+                this.switchTab(tab);
+            });
+        });
+        
+        // Month Navigation
+        document.getElementById('prevMonth').addEventListener('click', () => {
+            this.currentMonth.setMonth(this.currentMonth.getMonth() - 1);
+            this.updateMonthDisplay();
+            this.saveSelectedMonth();
+            this.render();
+        });
+        
+        document.getElementById('nextMonth').addEventListener('click', () => {
+            this.currentMonth.setMonth(this.currentMonth.getMonth() + 1);
+            this.updateMonthDisplay();
+            this.saveSelectedMonth();
+            this.render();
+        });
+        
+        document.getElementById('monthSelector').addEventListener('click', () => {
+            this.showMonthPicker();
+        });
+        
+        // Data Management
+        document.getElementById('saveMonthBtn').addEventListener('click', () => this.saveCurrentMonth());
+        document.getElementById('resetBtn').addEventListener('click', () => this.resetCurrentMonth());
+        document.getElementById('exportState').addEventListener('click', () => this.exportData());
+        document.getElementById('exportCSV').addEventListener('click', () => this.exportCSV());
+        document.getElementById('importState').addEventListener('click', () => {
+            document.getElementById('importStateFile').click();
+        });
+        
+        document.getElementById('importStateFile').addEventListener('change', (e) => {
+            this.importData(e);
+        });
+        
+        // Quick Add Modal
+        document.getElementById('quickAddCancel').addEventListener('click', () => {
+            this.hideQuickAddModal();
+        });
+        
+        document.getElementById('quickAddConfirm').addEventListener('click', () => {
+            this.confirmQuickAdd();
+        });
+        
+        // Enter key in modal
+        document.getElementById('quickAddAmount').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                this.confirmQuickAdd();
+            }
+        });
+        
+        // Input handling with proper iPhone support
+        this.setupInputHandling();
+    }
+    
+    setupInputHandling() {
+        const categoriesContainer = document.getElementById('categories');
+        
+        // Event Delegation for better performance
+        categoriesContainer.addEventListener('input', (e) => {
+            const target = e.target;
+            
+            if (target.classList.contains('item-amount-input')) {
+                this.debounce(() => {
+                    const category = target.dataset.category;
+                    const index = parseInt(target.dataset.index);
+                    const value = parseFloat(target.value) || 0;
+                    
+                    if (category && !isNaN(index) && this.state[category]) {
+                        this.state[category].items[index].amount = value;
+                        this.saveState();
+                        
+                        requestAnimationFrame(() => {
+                            this.updateCategoryTotal(category);
+                            this.renderQuickStats();
+                            this.renderWarnings();
+                            this.renderThresholds();
+                        });
+                        
+                        this.debouncedChartUpdate();
+                    }
+                }, 150)();
+            }
+            
+            else if (target.classList.contains('item-name-input')) {
+                const category = target.dataset.category;
+                const index = parseInt(target.dataset.index);
+                if (category && !isNaN(index) && this.state[category]) {
+                    this.state[category].items[index].name = target.value;
+                    this.saveState();
+                }
+            }
+        });
+        
+        // Click events with better iPhone support
+        categoriesContainer.addEventListener('click', (e) => {
+            const target = e.target;
+            const button = target.closest('button');
+            
+            if (!button) return;
+            
+            // Quick Add Button
+            if (button.classList.contains('quick-add-btn')) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const category = button.dataset.category;
+                const index = parseInt(button.dataset.index);
+                
+                if (category && !isNaN(index)) {
+                    this.showQuickAddModal(category, index);
+                }
+            }
+            
+            // Delete Button
+            else if (button.classList.contains('delete-item-btn')) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const category = button.dataset.category;
+                const index = parseInt(button.dataset.index);
+                
+                if (confirm('Eintrag löschen?')) {
+                    this.state[category].items.splice(index, 1);
+                    this.saveState();
+                    this.render();
+                    this.showToast('Eintrag gelöscht');
+                }
+            }
+            
+            // Add Item Button
+            else if (button.classList.contains('add-item-btn')) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const category = button.dataset.category;
+                this.state[category].items.push({ name: 'Neuer Eintrag', amount: 0 });
+                this.saveState();
+                this.render();
+                this.showToast('Eintrag hinzugefügt');
+            }
+            
+            // Edit Threshold Button
+            else if (button.classList.contains('edit-threshold-btn')) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const category = button.dataset.category;
+                const current = this.state[category].threshold;
+                const newThreshold = prompt(`Limit für ${category}:`, current === 999999 ? '' : current);
+                
+                if (newThreshold !== null) {
+                    if (newThreshold === '') {
+                        this.state[category].threshold = 999999;
+                    } else {
+                        const num = parseFloat(newThreshold);
+                        if (!isNaN(num) && num >= 0) {
+                            this.state[category].threshold = num;
+                        }
+                    }
+                    this.saveState();
+                    this.render();
+                    this.showToast('Limit aktualisiert');
+                }
+            }
+        });
+    }
+    
+    showQuickAddModal(categoryName, itemIndex) {
+        const item = this.state[categoryName].items[itemIndex];
+        this.currentQuickAdd = { category: categoryName, index: itemIndex };
+        
+        document.getElementById('quickAddTitle').textContent = 
+            `Betrag zu "${item.name}" hinzufügen\nAktuell: ${this.formatCurrency(item.amount)}`;
+        
+        document.getElementById('quickAddAmount').value = '';
+        document.getElementById('quickAddModal').classList.remove('hidden');
+        
+        // Focus input with delay for iOS
+        setTimeout(() => {
+            document.getElementById('quickAddAmount').focus();
+        }, 100);
+    }
+    
+    hideQuickAddModal() {
+        document.getElementById('quickAddModal').classList.add('hidden');
+        this.currentQuickAdd = null;
+    }
+    
+    confirmQuickAdd() {
+        if (!this.currentQuickAdd) return;
+        
+        const amountInput = document.getElementById('quickAddAmount');
+        const amountStr = amountInput.value.replace(',', '.');
+        const amountToAdd = parseFloat(amountStr);
+        
+        if (isNaN(amountToAdd) || amountToAdd <= 0) {
+            this.showToast('Bitte gültigen Betrag eingeben');
+            amountInput.focus();
+            return;
+        }
+        
+        const { category, index } = this.currentQuickAdd;
+        const item = this.state[category].items[index];
+        const currentAmount = item.amount;
+        
+        // Add to existing amount
+        item.amount = currentAmount + amountToAdd;
+        
+        this.saveState();
+        this.render();
+        this.hideQuickAddModal();
+        this.showToast(`${this.formatCurrency(amountToAdd)} zu ${item.name} hinzugefügt`);
+    }
+    
+    debouncedChartUpdate = this.debounce(() => {
+        requestAnimationFrame(() => {
+            this.renderCharts();
+        });
+    }, 500);
+    
+    debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+    
+    initDemoHistory() {
+        if (this.history.length === 0) {
+            const today = new Date();
+            for (let i = 2; i >= 0; i--) {
+                const date = new Date(today.getFullYear(), today.getMonth() - i, 1);
+                const month = this.getMonthKey(date);
+                const snapshot = JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
+                
+                Object.keys(snapshot).forEach(category => {
+                    snapshot[category].items.forEach(item => {
+                        if (item.amount > 0) {
+                            const variation = 0.7 + Math.random() * 0.6;
+                            item.amount = Math.round(item.amount * variation);
+                        }
+                    });
+                });
+                
+                this.history.push({
+                    month,
+                    data: snapshot,
+                    timestamp: date.toISOString()
+                });
+            }
+            this.saveHistory();
+        }
+    }
+    
+    switchTab(tabName) {
+        requestAnimationFrame(() => {
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.tab === tabName);
+            });
+            
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.toggle('active', content.id === `tab-${tabName}`);
+            });
+            
+            if (tabName === 'analysis') {
+                setTimeout(() => this.renderAnalysis(), 100);
+            }
+        });
+    }
+    
+    updateMonthDisplay() {
+        const monthNames = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni',
+                           'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
+        
+        const month = monthNames[this.currentMonth.getMonth()];
+        const year = this.currentMonth.getFullYear();
+        document.getElementById('currentMonthDisplay').textContent = `${month} ${year}`;
+        
+        const today = new Date();
+        const isCurrentMonth = today.getMonth() === this.currentMonth.getMonth() && 
+                               today.getFullYear() === this.currentMonth.getFullYear();
+        
+        if (isCurrentMonth) {
+            const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+            const progress = Math.round((today.getDate() / daysInMonth) * 100);
+            document.getElementById('monthProgress').textContent = `Tag ${today.getDate()}/${daysInMonth} (${progress}%)`;
+            document.getElementById('monthStatus').textContent = 'Aktuell';
+            document.getElementById('monthStatus').className = 'badge';
+        } else {
+            document.getElementById('monthProgress').textContent = 'Archiv';
+            document.getElementById('monthStatus').textContent = 'Archiv';
+            document.getElementById('monthStatus').className = 'badge';
+        }
+    }
+    
+    showMonthPicker() {
+        const today = new Date();
+        const months = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni',
+                       'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
+        
+        let options = '';
+        for (let i = 6; i >= 0; i--) {
+            const date = new Date(today.getFullYear(), today.getMonth() - i, 1);
+            const monthName = months[date.getMonth()];
+            const year = date.getFullYear();
+            const isSelected = date.getMonth() === this.currentMonth.getMonth() && 
+                              date.getFullYear() === this.currentMonth.getFullYear();
+            
+            options += `${isSelected ? '✓ ' : '  '}${monthName} ${year}\n`;
+        }
+        
+        const selection = prompt(`Monat auswählen:\n\n${options}\nNummer eingeben (1-7):`, "1");
+        if (selection !== null) {
+            const selectedIndex = parseInt(selection);
+            if (!isNaN(selectedIndex) && selectedIndex >= 1 && selectedIndex <= 7) {
+                const date = new Date(today.getFullYear(), today.getMonth() - (7 - selectedIndex), 1);
+                this.currentMonth = date;
+                this.updateMonthDisplay();
+                this.saveSelectedMonth();
+                this.render();
+                this.showToast('Monat gewechselt');
+            }
+        }
+    }
+    
+    getMonthKey(date = new Date()) {
+        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    }
+    
+    calculateTotals(data = this.state) {
+        const totals = {};
+        let totalIncome = 0;
+        let totalExpenses = 0;
+        
+        for (const [category, categoryData] of Object.entries(data)) {
+            const total = categoryData.items.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
+            totals[category] = total;
+            
+            if (category === 'Einnahmen') {
+                totalIncome += total;
+            } else {
+                totalExpenses += total;
+            }
+        }
+        
+        return { totals, totalIncome, totalExpenses };
+    }
+    
+    render() {
+        requestAnimationFrame(() => {
+            this.updateMonthDisplay();
+            this.renderCategories();
+            this.renderQuickStats();
+            this.renderWarnings();
+            this.renderThresholds();
+        });
+    }
+    
+    renderCategories() {
+        const container = document.getElementById('categories');
+        const { totals } = this.calculateTotals();
+        
+        let html = '';
+        
+        for (const [categoryName, categoryData] of Object.entries(this.state)) {
+            const total = totals[categoryName] || 0;
+            const isOver = total > categoryData.threshold && categoryData.threshold < 999999;
+            
+            const canAddAmounts = ["Variabel", "Leben", "Sparen"].includes(categoryName);
+            
+            html += `
+                <div class="card" data-category="${categoryName}">
+                    <div class="flex justify-between items-center mb-3">
+                        <div class="flex items-center gap-2">
+                            <span>${categoryData.icon || '📁'}</span>
+                            <h3 class="font-semibold">${categoryName}</h3>
+                        </div>
+                        <div class="text-right">
+                            <div class="font-bold amount ${isOver ? 'negative' : ''}" id="total-${categoryName.replace(/\s+/g, '-')}">
+                                ${this.formatCurrency(total)}
+                            </div>
+                            ${categoryData.threshold < 999999 ? 
+                               `<div class="text-xs opacity-75">von ${this.formatCurrency(categoryData.threshold)}</div>` : ''}
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-3 mb-3">
+            `;
+            
+            categoryData.items.forEach((item, index) => {
+                html += `
+                    <div class="flex items-center gap-2">
+                        <input type="text" 
+                               value="${this.escapeHTML(item.name)}"
+                               class="flex-1 p-2 rounded-lg border item-name-input"
+                               data-category="${categoryName}"
+                               data-index="${index}"
+                               placeholder="Name"
+                               autocapitalize="words">
+                        <div class="flex items-center gap-1">
+                            <input type="number" 
+                                   value="${item.amount}"
+                                   step="0.01"
+                                   min="0"
+                                   class="w-24 p-2 rounded-lg border item-amount-input"
+                                   data-category="${categoryName}"
+                                   data-index="${index}"
+                                   placeholder="0.00"
+                                   inputmode="decimal">
+                            ${canAddAmounts ? `
+                                <button class="quick-add-btn" 
+                                        data-category="${categoryName}"
+                                        data-index="${index}"
+                                        title="Betrag hinzufügen">
+                                    +
+                                </button>
+                            ` : ''}
+                        </div>
+                        <button class="secondary delete-item-btn" style="padding: 8px;"
+                                data-category="${categoryName}"
+                                data-index="${index}"
+                                aria-label="Löschen">
+                            ✕
+                        </button>
+                    </div>
+                `;
+            });
+            
+            html += `
+                    </div>
+                    
+                    <div class="flex gap-2">
+                        <button class="add-item-btn secondary flex-1" data-category="${categoryName}">
+                            + Neuer Eintrag
+                        </button>
+                        ${categoryName !== 'Einnahmen' ? `
+                            <button class="edit-threshold-btn secondary" style="padding: 8px 12px;"
+                                    data-category="${categoryName}">
+                                Limit
+                            </button>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        }
+        
+        container.innerHTML = html;
+    }
+    
+    updateCategoryTotal(categoryName) {
+        const total = this.state[categoryName].items.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
+        const totalElement = document.getElementById(`total-${categoryName.replace(/\s+/g, '-')}`);
+        
+        if (totalElement) {
+            requestAnimationFrame(() => {
+                totalElement.textContent = this.formatCurrency(total);
+                
+                const isOver = total > this.state[categoryName].threshold && this.state[categoryName].threshold < 999999;
+                if (isOver) {
+                    totalElement.classList.add('negative');
+                    totalElement.classList.remove('positive');
+                } else {
+                    totalElement.classList.remove('negative');
+                }
+            });
+        }
+    }
+    
+    renderQuickStats() {
+        requestAnimationFrame(() => {
+            const { totalIncome, totalExpenses } = this.calculateTotals();
+            const saldo = totalIncome - totalExpenses;
+            const sparquote = totalIncome > 0 ? ((totalIncome - totalExpenses) / totalIncome * 100) : 0;
+            
+            document.getElementById('saldo').textContent = this.formatCurrency(saldo);
+            document.getElementById('saldo').className = `font-bold amount ${saldo >= 0 ? 'positive' : 'negative'}`;
+            
+            document.getElementById('expenses').textContent = this.formatCurrency(totalExpenses);
+            document.getElementById('sparquote').textContent = `${sparquote.toFixed(1)}%`;
+            document.getElementById('sparquote').className = `font-bold amount ${sparquote >= 20 ? 'positive' : 'negative'}`;
+        });
+    }
+    
+    renderWarnings() {
+        const container = document.getElementById('warningArea');
+        const { totals } = this.calculateTotals();
+        
+        const warnings = [];
+        for (const [category, categoryData] of Object.entries(this.state)) {
+            if (categoryData.threshold < 999999 && totals[category] > categoryData.threshold) {
+                warnings.push({
+                    category,
+                    total: totals[category],
+                    threshold: categoryData.threshold
+                });
+            }
+        }
+        
+        requestAnimationFrame(() => {
+            if (warnings.length > 0) {
+                container.innerHTML = `
+                    <div class="warning">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span>⚠️</span>
+                            <h3 class="font-semibold">Budget-Warnungen</h3>
+                        </div>
+                        ${warnings.map(warning => `
+                            <div class="text-sm">
+                                ${warning.category}: ${this.formatCurrency(warning.total)} (Limit: ${this.formatCurrency(warning.threshold)})
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            } else {
+                container.innerHTML = '';
+            }
+        });
+    }
+    
+    renderCharts() {
+        requestAnimationFrame(() => {
+            this.renderPieChart();
+            
+            if (document.getElementById('tab-analysis').classList.contains('active')) {
+                this.renderBarChart();
+            }
+        });
+    }
+    
+    renderPieChart() {
+        const canvas = document.getElementById('pieChart');
+        if (!canvas) return;
+        
+        const ctx = canvas.getContext('2d');
+        const { totals } = this.calculateTotals();
+        
+        if (this.charts.pie) {
+            this.charts.pie.destroy();
+        }
+        
+        const labels = [];
+        const data = [];
+        const colors = [];
+        const isDark = !document.body.classList.contains('light');
+        
+        for (const [category, categoryData] of Object.entries(this.state)) {
+            if (category !== 'Einnahmen' && totals[category] > 0) {
+                labels.push(category);
+                data.push(totals[category]);
+                colors.push(categoryData.color);
+            }
+        }
+        
+        if (data.length === 0) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.font = '14px -apple-system, sans-serif';
+            ctx.fillStyle = isDark ? '#94a3b8' : '#6b7280';
+            ctx.textAlign = 'center';
+            ctx.fillText('Keine Ausgaben', canvas.width / 2, canvas.height / 2);
+            return;
+        }
+        
+        try {
+            this.charts.pie = new Chart(ctx, {
+                type: 'doughnut', // Changed to doughnut for better mobile rendering
+                data: {
+                    labels,
+                    datasets: [{
+                        data,
+                        backgroundColor: colors,
+                        borderWidth: 1,
+                        borderColor: isDark ? '#334155' : '#e5e7eb'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: isDark ? '#cbd5e1' : '#4b5563',
+                                padding: 20,
+                                font: { size: 12 }
+                            }
+                        }
+                    },
+                    // Performance optimizations
+                    animation: {
+                        duration: 300
+                    }
+                }
+            });
+        } catch (error) {
+            console.error('Chart Fehler:', error);
+        }
+    }
+    
+    renderBarChart() {
+        const canvas = document.getElementById('barChart');
+        if (!canvas) return;
+        
+        const ctx = canvas.getContext('2d');
+        const isDark = !document.body.classList.contains('light');
+        
+        if (this.charts.bar) {
+            this.charts.bar.destroy();
+        }
+        
+        if (this.history.length === 0) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.font = '14px -apple-system, sans-serif';
+            ctx.fillStyle = isDark ? '#94a3b8' : '#6b7280';
+            ctx.textAlign = 'center';
+            ctx.fillText('Keine Historie', canvas.width / 2, canvas.height / 2);
+            return;
+        }
+        
+        const recentHistory = this.history.slice(-6);
+        const labels = recentHistory.map(h => h.month);
+        const values = recentHistory.map(h => {
+            const totals = this.calculateTotals(h.data).totals;
+            return Object.keys(totals)
+                .filter(cat => cat !== 'Einnahmen')
+                .reduce((sum, cat) => sum + totals[cat], 0);
+        });
+        
+        try {
+            this.charts.bar = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: 'Ausgaben',
+                        data: values,
+                        backgroundColor: isDark ? '#3b82f6' : '#3b82f6',
+                        borderColor: isDark ? '#2563eb' : '#2563eb',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                color: isDark ? '#cbd5e1' : '#4b5563',
+                                callback: (value) => this.formatCurrency(value)
+                            },
+                            grid: {
+                                color: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: isDark ? '#cbd5e1' : '#4b5563'
+                            },
+                            grid: {
+                                color: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
+                            }
+                        }
+                    },
+                    // Performance optimizations
+                    animation: {
+                        duration: 300
+                    }
+                }
+            });
+        } catch (error) {
+            console.error('Bar Chart Fehler:', error);
+        }
+    }
+    
+    renderThresholds() {
+        const container = document.getElementById('thresholds');
+        const { totals } = this.calculateTotals();
+        
+        let html = '';
+        
+        for (const [category, categoryData] of Object.entries(this.state)) {
+            if (category === 'Einnahmen' || categoryData.threshold >= 999999) continue;
+            
+            const total = totals[category] || 0;
+            const threshold = categoryData.threshold;
+            const percentage = Math.min((total / threshold) * 100, 100);
+            const isOver = total > threshold;
+            const isDark = !document.body.classList.contains('light');
+            
+            html += `
+                <div>
+                    <div class="flex justify-between items-center mb-1">
+                        <div class="flex items-center gap-2">
+                            <span>${categoryData.icon || '📁'}</span>
+                            <span class="text-sm">${category}</span>
+                        </div>
+                        <div class="text-right">
+                            <div class="font-medium text-sm ${isOver ? 'negative' : ''}">
+                                ${this.formatCurrency(total)} / ${this.formatCurrency(threshold)}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${percentage}%; background: ${isOver ? '#ef4444' : categoryData.color};"></div>
+                    </div>
+                    <div class="text-xs opacity-75 mt-1 text-right">${percentage.toFixed(0)}%</div>
+                </div>
+            `;
+        }
+        
+        container.innerHTML = html;
+    }
+    
+    renderAnalysis() {
+        setTimeout(() => {
+            this.renderBarChart();
+            this.renderAnalysisText();
+        }, 100);
+    }
+    
+    renderAnalysisText() {
+        const container = document.getElementById('analysisText');
+        
+        if (this.history.length === 0) {
+            container.innerHTML = '<p class="opacity-75">Keine Historie vorhanden.</p>';
+            return;
+        }
+        
+        const lastMonth = this.history[this.history.length - 1];
+        const snapshot = lastMonth.data;
+        const totals = this.calculateTotals(snapshot).totals;
+        
+        let highestExpense = { amount: 0, name: '', category: '' };
+        for (const [category, categoryData] of Object.entries(snapshot)) {
+            if (category === 'Einnahmen') continue;
+            for (const item of categoryData.items) {
+                if (item.amount > highestExpense.amount) {
+                    highestExpense = { amount: item.amount, name: item.name, category };
+                }
+            }
+        }
+        
+        const income = totals['Einnahmen'] || 0;
+        const savings = totals['Sparen'] || 0;
+        const savingsRate = income > 0 ? (savings / income * 100) : 0;
+        
+        const html = `
+            <div class="space-y-3">
+                <div>
+                    <div class="text-sm opacity-75">Monat</div>
+                    <div class="font-medium">${lastMonth.month}</div>
+                </div>
+                
+                <div>
+                    <div class="text-sm opacity-75">Größte Ausgabe</div>
+                    <div class="font-medium">
+                        ${highestExpense.name ? `${highestExpense.name} (${highestExpense.category}): ${this.formatCurrency(highestExpense.amount)}` : 'Keine'}
+                    </div>
+                </div>
+                
+                <div>
+                    <div class="text-sm opacity-75">Sparquote</div>
+                    <div class="font-medium ${savingsRate >= 20 ? 'positive' : 'negative'}">
+                        ${savingsRate.toFixed(1)}%
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        container.innerHTML = html;
+    }
+    
+    saveCurrentMonth() {
+        const currentMonthKey = this.getMonthKey(this.currentMonth);
+        const snapshot = JSON.parse(JSON.stringify(this.state));
+        
+        const existingIndex = this.history.findIndex(h => h.month === currentMonthKey);
+        
+        if (existingIndex !== -1) {
+            this.history[existingIndex].data = snapshot;
+            this.history[existingIndex].timestamp = new Date().toISOString();
+            this.showToast('Monat aktualisiert');
+        } else {
+            this.history.push({
+                month: currentMonthKey,
+                data: snapshot,
+                timestamp: new Date().toISOString()
+            });
+            this.showToast('Monat gespeichert');
+        }
+        
+        this.saveHistory();
+    }
+    
+    resetCurrentMonth() {
+        if (!confirm('Monat zurücksetzen? Alle Beträge werden auf 0 gesetzt.')) return;
+        
+        for (const [category, categoryData] of Object.entries(this.state)) {
+            categoryData.items.forEach(item => {
+                item.amount = 0;
+            });
+        }
+        
+        this.saveState();
+        this.render();
+        this.showToast('Monat zurückgesetzt');
+    }
+    
+    exportData() {
+        const data = {
+            state: this.state,
+            history: this.history,
+            selectedMonth: this.currentMonth,
+            exportDate: new Date().toISOString()
+        };
+        
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `finanzen-backup-${this.getMonthKey()}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        this.showToast('Backup exportiert');
+    }
+    
+    exportCSV() {
+        let csv = 'Kategorie;Bezeichnung;Betrag;Limit\n';
+        
+        for (const [category, categoryData] of Object.entries(this.state)) {
+            categoryData.items.forEach(item => {
+                csv += `${category};${item.name};${item.amount.toFixed(2)};${categoryData.threshold}\n`;
+            });
+        }
+        
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `finanzen-${this.getMonthKey()}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        this.showToast('CSV exportiert');
+    }
+    
+    importData(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const data = JSON.parse(e.target.result);
+                
+                if (!confirm('Aktuelle Daten überschreiben?')) {
+                    event.target.value = '';
+                    return;
+                }
+                
+                if (data.state) {
+                    this.state = data.state;
+                    if (data.history) this.history = data.history;
+                    if (data.selectedMonth) this.currentMonth = new Date(data.selectedMonth);
+                    
+                    this.saveState();
+                    this.saveHistory();
+                    this.saveSelectedMonth();
+                    this.render();
+                    this.showToast('Backup importiert');
+                }
+            } catch {
+                this.showToast('Fehler beim Import');
+            }
+            
+            event.target.value = '';
+        };
+        reader.readAsText(file);
+    }
+    
+    formatCurrency(amount) {
+        return new Intl.NumberFormat('de-DE', {
+            style: 'currency',
+            currency: 'EUR',
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }).format(amount);
+    }
+    
+    escapeHTML(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+    
+    showToast(message) {
+        document.querySelectorAll('.toast').forEach(toast => toast.remove());
+        
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.parentNode.removeChild(toast);
+            }
+        }, 2000);
+    }
+}
+
+// Initialize App with proper iPhone support
+document.addEventListener('DOMContentLoaded', () => {
+    // Prevent iOS zoom
+    document.addEventListener('touchstart', function(e) {
+        if (e.touches.length > 1) {
+            e.preventDefault();
+        }
+    }, { passive: false });
+    
+    // Prevent text selection
+    document.addEventListener('selectstart', function(e) {
+        if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'SELECT') {
+            e.preventDefault();
+        }
+    });
+    
+    // Initialize app
+    if (typeof Chart === 'undefined') {
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js';
+        script.onload = () => {
+            window.app = new PerformanceFinanceApp();
+        };
+        document.head.appendChild(script);
+    } else {
+        window.app = new PerformanceFinanceApp();
+    }
+});
+</script>
+</body>
+</html>
